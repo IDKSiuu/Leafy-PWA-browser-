@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="meadow" data-fontsize="medium">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Leafy Browser</title>
+<meta name="theme-color" content="#2D6A4F">
+<meta name="description" content="A lightweight installable mini browser">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- Tab strip -->
+  <div id="tabStrip" role="tablist" aria-label="Open tabs">
+    <button id="newTabBtn" aria-label="New tab" title="New tab">+</button>
+  </div>
+
+  <!-- Toolbar -->
+  <div id="toolbar">
+    <button id="backBtn" class="navBtn" disabled aria-label="Go back">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button id="fwdBtn" class="navBtn" disabled aria-label="Go forward">
+      <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button id="reloadBtn" class="navBtn" aria-label="Reload">
+      <svg viewBox="0 0 24 24"><path d="M4 4v6h6M20 20v-6h-6M20 10a8 8 0 00-14.9-3M4 14a8 8 0 0014.9 3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <form id="urlForm" autocomplete="off">
+      <span id="urlLockIcon">🔒</span>
+      <input id="urlInput" type="text" inputmode="url" placeholder="Search or type a URL" aria-label="Address bar" spellcheck="false">
+    </form>
+
+    <button id="starBtn" class="navBtn" aria-label="Bookmark this page">
+      <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    </button>
+    <button id="menuBtn" class="navBtn" aria-label="Menu">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="19" r="1.8" fill="currentColor"/></svg>
+    </button>
+  </div>
+
+  <!-- Browsing surface -->
+  <div id="viewport">
+    <div id="startScreen">
+      <div id="startLogo">🍃</div>
+      <h1>Leafy</h1>
+      <p>Type a URL or search above to start browsing.</p>
+      <div id="startHint">Some big sites (Google, YouTube, Instagram…) block embedding. Leafy will try a couple of workarounds automatically, then fall back to opening them in a new tab — you can turn that behavior off in Settings.</div>
+      <div id="footerCredit">By IDKSiuu 2026©️</div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <!-- Overlay shared by menu panel + confirm modal -->
+  <div id="overlay"></div>
+
+  <!-- Menu panel -->
+  <div id="menuPanel" aria-hidden="true">
+    <div class="panelHeader">
+      <button id="panelBack" class="panelBackBtn" hidden aria-label="Back">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span id="panelTitle">Menu</span>
+      <button id="panelClose" aria-label="Close">✕</button>
+    </div>
+    <div class="panelBody">
+
+      <div id="menuList" class="menuView">
+        <button class="menuItem" data-view="bookmarks">⭐ Bookmarks</button>
+        <button class="menuItem" data-view="history">🕘 History</button>
+        <button class="menuItem" data-view="settings">⚙️ Settings</button>
+      </div>
+
+      <div id="bookmarksView" class="menuView listView" hidden>
+        <div class="emptyState">No bookmarks yet. Tap ⭐ on any page to save it.</div>
+      </div>
+
+      <div id="historyView" class="menuView listView" hidden>
+        <button class="menuItem dangerItem" id="clearHistoryBtn">🗑 Clear history</button>
+        <div class="sectionGap"></div>
+        <div class="emptyState">No history yet.</div>
+      </div>
+
+      <div id="settingsView" class="menuView" hidden>
+
+        <div class="settingsGroup">
+          <div class="settingsLabel">Theme</div>
+          <div id="themeGrid" class="themeGrid">
+            <button class="themeSwatch" data-theme="meadow"><span class="swatchDot"></span>Meadow</button>
+            <button class="themeSwatch" data-theme="daylight"><span class="swatchDot"></span>Daylight</button>
+            <button class="themeSwatch" data-theme="midnight"><span class="swatchDot"></span>Midnight</button>
+            <button class="themeSwatch" data-theme="solar"><span class="swatchDot"></span>Solar</button>
+            <button class="themeSwatch" data-theme="dreamy"><span class="swatchDot"></span>Dreamy</button>
+            <button class="themeSwatch" data-theme="lagoon"><span class="swatchDot"></span>Lagoon</button>
+          </div>
+        </div>
+
+        <div class="settingsGroup">
+          <div class="settingsLabel">Font size</div>
+          <div id="fontSizeRow" class="segmentedRow">
+            <button class="segmentBtn" data-fontsize="small">Small</button>
+            <button class="segmentBtn" data-fontsize="medium">Medium</button>
+            <button class="segmentBtn" data-fontsize="large">Large</button>
+          </div>
+        </div>
+
+        <div class="settingsGroup">
+          <div class="settingsLabel">Default search engine</div>
+          <div id="searchEngineRow" class="segmentedRow">
+            <button class="segmentBtn" data-engine="bing">Bing</button>
+            <button class="segmentBtn" data-engine="duckduckgo">DuckDuckGo</button>
+            <button class="segmentBtn" data-engine="coccoc">Coc Coc</button>
+          </div>
+        </div>
+
+        <div class="settingsGroup">
+          <label class="toggleRow">
+            <span>Try to unblock restricted sites</span>
+            <input type="checkbox" id="proxyToggle" class="toggleInput">
+            <span class="toggleSwitch"></span>
+          </label>
+          <div class="settingsHint">When on, Leafy tries a couple of workarounds before giving up and opening a blocked site in a new tab. When off, blocked sites always open in a new tab directly.</div>
+        </div>
+
+        <div class="settingsGroup">
+          <label class="toggleRow">
+            <span>Sound effects</span>
+            <input type="checkbox" id="soundToggle" class="toggleInput">
+            <span class="toggleSwitch"></span>
+          </label>
+        </div>
+
+        <div class="settingsGroup">
+          <label class="toggleRow">
+            <span>Confirm before closing tab</span>
+            <input type="checkbox" id="confirmCloseToggle" class="toggleInput">
+            <span class="toggleSwitch"></span>
+          </label>
+        </div>
+
+        <div class="settingsGroup">
+          <button class="menuItem dangerItem" id="clearDataBtn">🗑 Clear all history &amp; bookmarks</button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Centered confirm modal (used for clear data, and tab-close if enabled) -->
+  <div id="confirmModal" role="alertdialog" aria-modal="true" aria-hidden="true">
+    <div class="confirmCard">
+      <div id="confirmTitle" class="confirmTitle">Are you sure?</div>
+      <div id="confirmBody" class="confirmBody">This can't be undone.</div>
+      <div class="confirmActions">
+        <button id="confirmCancelBtn" class="confirmBtn confirmCancel">Cancel</button>
+        <button id="confirmOkBtn" class="confirmBtn confirmDanger">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="xframe-bypass.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
